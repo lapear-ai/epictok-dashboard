@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EpicTok Dashboard - Historical Video Factory</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0f;
+            color: #e0e0e0;
+            min-height: 100vh;
+        }
+        
+        .header {
+            background: #12121a;
+            border-bottom: 1px solid #1e1e2e;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            color: #fff;
+        }
+        
+        .header h1 span {
+            color: #4a9eff;
+        }
+        
+        .stats {
+            display: flex;
+            gap: 30px;
+        }
+        
+        .stat {
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 28px;
+            font-weight: 600;
+            color: #4a9eff;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #888;
+            text-transform: uppercase;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px;
+        }
+        
+        .actions {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 40px;
+        }
+        
+        .btn {
+            padding: 14px 28px;
+            border-radius: 8px;
+            border: none;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background: #4a9eff;
+            color: #fff;
+        }
+        
+        .btn-primary:hover {
+            background: #3a8eef;
+        }
+        
+        .btn-secondary {
+            background: #1e1e2e;
+            color: #aaa;
+            border: 1px solid #2a2a3a;
+        }
+        
+        .btn-secondary:hover {
+            background: #2a2a3a;
+            color: #fff;
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .status-bar {
+            background: #1e1e2e;
+            border: 1px solid #2a2a3a;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+            display: none;
+        }
+        
+        .status-bar.active {
+            display: block;
+        }
+        
+        .status-bar.generating {
+            border-color: #4a9eff;
+        }
+        
+        .status-bar.completed {
+            border-color: #51cf66;
+        }
+        
+        .status-bar.error {
+            border-color: #ff6b6b;
+        }
+        
+        .progress-bar {
+            height: 6px;
+            background: #2a2a3a;
+            border-radius: 3px;
+            overflow: hidden;
+            margin: 15px 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: #4a9eff;
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        }
+        
+        .status-message {
+            font-size: 14px;
+            color: #aaa;
+        }
+        
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+        }
+        
+        .project-card {
+            background: #12121a;
+            border: 1px solid #1e1e2e;
+            border-radius: 12px;
+            overflow: hidden;
+            transition: border-color 0.2s;
+        }
+        
+        .project-card:hover {
+            border-color: #2a2a3a;
+        }
+        
+        .project-header {
+            padding: 20px;
+            border-bottom: 1px solid #1e1e2e;
+        }
+        
+        .project-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 8px;
+        }
+        
+        .project-year {
+            font-size: 24px;
+            font-weight: 700;
+            color: #4a9eff;
+        }
+        
+        .project-body {
+            padding: 20px;
+        }
+        
+        .project-script {
+            font-size: 13px;
+            color: #888;
+            line-height: 1.6;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+        
+        .project-meta {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .meta-tag {
+            font-size: 11px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+        
+        .tag-image {
+            background: #1a3a4a;
+            color: #6ab;
+        }
+        
+        .tag-image.missing {
+            background: #3a1a1a;
+            color: #b66;
+        }
+        
+        .tag-voice {
+            background: #1a3a1a;
+            color: #6b6;
+        }
+        
+        .tag-voice.missing {
+            background: #3a1a1a;
+            color: #b66;
+        }
+        
+        .tag-video {
+            background: #3a1a3a;
+            color: #b6b;
+        }
+        
+        .tag-video.ready {
+            background: #1a3a1a;
+            color: #6b6;
+        }
+        
+        .project-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn-small {
+            padding: 8px 16px;
+            font-size: 12px;
+        }
+        
+        .btn-download {
+            background: #51cf66;
+            color: #000;
+        }
+        
+        .btn-download:hover {
+            background: #41bf56;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 80px 40px;
+            color: #666;
+        }
+        
+        .empty-state h3 {
+            font-size: 20px;
+            margin-bottom: 10px;
+            color: #888;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #2a2a3a;
+            border-top-color: #4a9eff;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .spinner-container {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>⚡ <span>Epic</span>Tok Dashboard</h1>
+        <div class="stats">
+            <div class="stat">
+                <div class="stat-value" id="stat-total">0</div>
+                <div class="stat-label">Projects</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value" id="stat-completed">0</div>
+                <div class="stat-label">Videos</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value" id="stat-pending">0</div>
+                <div class="stat-label">Pending</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="actions">
+            <button class="btn btn-primary" id="btn-generate" onclick="generateVideo()">
+                <span>🎬</span> Generate Video
+            </button>
+            <button class="btn btn-primary" id="btn-generate-nova" onclick="generateVideoNova()" style="background: #9b59b6;">
+                <span>✨</span> Generate with Nova AI
+            </button>
+            <button class="btn btn-secondary" onclick="refreshProjects()">
+                <span>🔄</span> Refresh
+            </button>
+        </div>
+        <div style="margin-bottom: 15px; font-size: 12px; color: #666;">
+            <span style="color: #9b59b6;">✨ Nova AI:</span> Generates actual motion video ($0.48 per video) | <span style="color: #4a9eff;">🎬 Standard:</span> Ken Burns effect on static image (free)
+        </div>
+        
+        <div class="status-bar" id="status-bar">
+            <div class="spinner-container">
+                <span class="loading" id="status-spinner"></span>
+                <span class="status-message" id="status-message">Ready</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
+            </div>
+        </div>
+        
+        <div class="projects-grid" id="projects-grid">
+            <div class="empty-state">
+                <h3>No projects yet</h3>
+                <p>Click "Generate Video" to create your first historical video</p>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let currentJobId = null;
+        let statusCheckInterval = null;
+        
+        async function generateVideo() {
+            const btn = document.getElementById('btn-generate');
+            const btnNova = document.getElementById('btn-generate-nova');
+            const statusBar = document.getElementById('status-bar');
+            const statusMsg = document.getElementById('status-message');
+            const progressFill = document.getElementById('progress-fill');
+            const spinner = document.getElementById('status-spinner');
+
+            btn.disabled = true;
+            btnNova.disabled = true;
+            statusBar.classList.add('active', 'generating');
+            statusBar.classList.remove('completed', 'error');
+            spinner.style.display = 'inline-block';
+            
+            try {
+                const response = await fetch('/api/generate', { method: 'POST' });
+                const data = await response.json();
+                
+                currentJobId = data.job_id;
+                statusMsg.textContent = 'Queued...';
+                
+                // Start polling status
+                statusCheckInterval = setInterval(checkJobStatus, 1000);
+                
+            } catch (error) {
+                statusMsg.textContent = 'Error: ' + error.message;
+                statusBar.classList.add('error');
+                btn.disabled = false;
+            }
+        }
+        
+        async function generateVideoNova() {
+            const btn = document.getElementById('btn-generate-nova');
+            const statusBar = document.getElementById('status-bar');
+            const statusMsg = document.getElementById('status-message');
+            const progressFill = document.getElementById('progress-fill');
+            const spinner = document.getElementById('status-spinner');
+
+            btn.disabled = true;
+            statusBar.classList.add('active', 'generating');
+            statusBar.classList.remove('completed', 'error');
+            spinner.style.display = 'inline-block';
+
+            try {
+                const response = await fetch('/api/generate', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({use_nova: true})
+                });
+                const data = await response.json();
+
+                currentJobId = data.job_id;
+                statusMsg.textContent = 'Queued for Nova AI generation...';
+
+                // Start polling status
+                statusCheckInterval = setInterval(checkJobStatus, 1000);
+
+            } catch (error) {
+                statusMsg.textContent = 'Error: ' + error.message;
+                statusBar.classList.add('error');
+                btn.disabled = false;
+            }
+        }
+
+        async function checkJobStatus() {
+            if (!currentJobId) return;
+
+            try {
+                const response = await fetch(`/api/status/${currentJobId}`);
+                const data = await response.json();
+
+                const statusBar = document.getElementById('status-bar');
+                const statusMsg = document.getElementById('status-message');
+                const progressFill = document.getElementById('progress-fill');
+                const spinner = document.getElementById('status-spinner');
+                const btnGen = document.getElementById('btn-generate');
+                const btnNova = document.getElementById('btn-generate-nova');
+
+                statusMsg.textContent = data.message || data.status;
+                progressFill.style.width = (data.progress || 0) + '%';
+
+                if (data.status === 'completed') {
+                    clearInterval(statusCheckInterval);
+                    statusBar.classList.remove('generating');
+                    statusBar.classList.add('completed');
+                    spinner.style.display = 'none';
+                    btnGen.disabled = false;
+                    btnNova.disabled = false;
+                    refreshProjects();
+                    currentJobId = null;
+                } else if (data.status === 'error') {
+                    clearInterval(statusCheckInterval);
+                    statusBar.classList.remove('generating');
+                    statusBar.classList.add('error');
+                    spinner.style.display = 'none';
+                    btnGen.disabled = false;
+                    btnNova.disabled = false;
+                    currentJobId = null;
+                }
+            } catch (error) {
+                console.error('Status check error:', error);
+            }
+        }
+        
+        async function refreshProjects() {
+            try {
+                const [projectsRes, statsRes] = await Promise.all([
+                    fetch('/api/projects'),
+                    fetch('/api/stats')
+                ]);
+                
+                const projects = await projectsRes.json();
+                const stats = await statsRes.json();
+                
+                // Update stats
+                document.getElementById('stat-total').textContent = stats.total_projects;
+                document.getElementById('stat-completed').textContent = stats.completed_videos;
+                document.getElementById('stat-pending').textContent = stats.pending;
+                
+                // Update grid
+                const grid = document.getElementById('projects-grid');
+                
+                if (projects.length === 0) {
+                    grid.innerHTML = `
+                        <div class="empty-state">
+                            <h3>No projects yet</h3>
+                            <p>Click "Generate Video" to create your first historical video</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                grid.innerHTML = projects.map(p => `
+                    <div class="project-card">
+                        <div class="project-header">
+                            <div class="project-title">${p.title}</div>
+                            <div class="project-year">${p.year}</div>
+                        </div>
+                        <div class="project-body">
+                            <div class="project-script">${p.script}</div>
+                            <div class="project-meta">
+                                <span class="meta-tag tag-image ${p.has_image ? '' : 'missing'}">
+                                    ${p.has_image ? '✓ Image' : '⊗ Image'}
+                                </span>
+                                <span class="meta-tag tag-voice ${p.has_voice ? '' : 'missing'}">
+                                    ${p.has_voice ? '✓ Voice' : '⊗ Voice'}
+                                </span>
+                                <span class="meta-tag tag-video ${p.has_video ? 'ready' : ''}">
+                                    ${p.has_video ? '✓ Video' : '⊗ Video'}
+                                </span>
+                            </div>
+                            ${p.has_video ? `
+                                <div class="project-actions">
+                                    <a href="/api/video/${p.id}" class="btn btn-small btn-download" download>
+                                        ⬇ Download
+                                    </a>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                `).join('');
+                
+            } catch (error) {
+                console.error('Refresh error:', error);
+            }
+        }
+        
+        // Initial load
+        refreshProjects();
+        
+        // Auto-refresh every 30 seconds
+        setInterval(refreshProjects, 30000);
+    </script>
+</body>
+</html>
