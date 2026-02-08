@@ -460,8 +460,19 @@ def list_projects():
 @app.route('/api/generate', methods=['POST'])
 def generate():
     """Start video generation"""
-    data = request.get_json() or {}
-    use_nova = data.get('use_nova', False)
+    try:
+        # Try to parse JSON from request
+        if request.is_json:
+            data = request.get_json() or {}
+        else:
+            # Try to parse raw body as JSON
+            try:
+                data = json.loads(request.data.decode('utf-8')) if request.data else {}
+            except:
+                data = {}
+        use_nova = data.get('use_nova', False)
+    except:
+        use_nova = False
 
     job_id = f"job_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{random.randint(1000,9999)}"
     job_queue.put((job_id, use_nova))
