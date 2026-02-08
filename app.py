@@ -21,9 +21,14 @@ import logging
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'epictok-secret-key'
 
-# Config
-PROJECTS_DIR = Path("output")
-PROJECTS_DIR.mkdir(exist_ok=True)
+# Config - use absolute path for Railway
+PROJECTS_DIR = Path(os.getenv('RAILWAY_VOLUME_MOUNT_PATH', '.')) / "output"
+PROJECTS_DIR.mkdir(parents=True, exist_ok=True)
+
+@app.route('/health')
+def health_check():
+    """Health check for Railway"""
+    return jsonify({"status": "ok", "elevenlabs": bool(ELEVENLABS_API_KEY)})
 
 # Job queue for background processing
 job_queue = Queue()
